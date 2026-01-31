@@ -29,4 +29,12 @@
 #include "api.h"
 #include "c_api_impl.hh"
 
+namespace webview {
+class webview : public browser_engine {
+public:
+  webview(bool debug = false, void *wnd = nullptr, bool headless = false)
+      : browser_engine(debug, wnd, headless) {}
+};
+} // namespace webview
+
 #endif // WEBVIEW_H

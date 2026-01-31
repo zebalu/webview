@@ -88,8 +88,9 @@ using namespace webkit;
 
 class cocoa_wkwebview_engine : public engine_base {
 public:
-  cocoa_wkwebview_engine(bool debug, void *window)
-      : engine_base{!window}, m_app{NSApplication_get_sharedApplication()} {
+  cocoa_wkwebview_engine(bool debug, void *window, bool headless = false)
+      : engine_base{!window}, m_app{NSApplication_get_sharedApplication()},
+        m_headless{headless} {
     window_init(window);
     window_settings(debug);
     dispatch_size_default();
@@ -515,7 +516,9 @@ private:
     set_up_widget();
     NSWindow_set_contentView(m_window, m_widget);
     if (owns_window()) {
-      NSWindow_makeKeyAndOrderFront(m_window);
+      if (!m_headless) {
+        NSWindow_makeKeyAndOrderFront(m_window);
+      }
     }
   }
   void set_up_widget() {
@@ -612,6 +615,7 @@ private:
   id m_webview{};
   id m_manager{};
   bool m_is_window_shown{};
+  bool m_headless{};
 };
 
 } // namespace cocoa_webkit

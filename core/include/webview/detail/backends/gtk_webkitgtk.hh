@@ -99,7 +99,8 @@ private:
 
 class gtk_webkit_engine : public engine_base {
 public:
-  gtk_webkit_engine(bool debug, void *window) : engine_base{!window} {
+  gtk_webkit_engine(bool debug, void *window, bool headless = false)
+      : engine_base{!window}, m_headless{headless} {
     window_init(window);
     window_settings(debug);
     dispatch_size_default();
@@ -325,7 +326,9 @@ private:
 
     if (owns_window()) {
       gtk_widget_grab_focus(GTK_WIDGET(m_webview));
-      gtk_compat::widget_set_visible(GTK_WIDGET(m_window), true);
+      if (!m_headless) {
+        gtk_compat::widget_set_visible(GTK_WIDGET(m_window), true);
+      }
     }
     m_is_window_shown = true;
     return {};
@@ -342,6 +345,7 @@ private:
   WebKitUserContentManager *m_user_content_manager{};
   bool m_stop_run_loop{};
   bool m_is_window_shown{};
+  bool m_headless{};
 };
 
 } // namespace detail
