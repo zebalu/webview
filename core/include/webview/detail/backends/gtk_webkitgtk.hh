@@ -349,7 +349,8 @@ private:
       return {};
     }
     if (!GTK_IS_WIDGET(m_window) || !GTK_IS_WIDGET(m_webview)) {
-      return error_info{WEBVIEW_ERROR_INVALID_STATE, "Window or webview is not a valid widget"};
+      return error_info{WEBVIEW_ERROR_INVALID_STATE,
+                        "Window or webview is not a valid widget"};
     }
     gtk_compat::window_set_child(GTK_WINDOW(m_window), GTK_WIDGET(m_webview));
     gtk_compat::widget_set_visible(GTK_WIDGET(m_webview), true);
