@@ -117,17 +117,19 @@ public:
         g_signal_handlers_disconnect_by_data(GTK_WINDOW(m_window), this);
         gtk_window_close(GTK_WINDOW(m_window));
         on_window_destroyed(true);
+        m_window = nullptr;
       } else {
         gtk_compat::window_remove_child(GTK_WINDOW(m_window),
                                         GTK_WIDGET(m_webview));
       }
     }
-    if (m_webview) {
-      g_object_unref(m_webview);
-    }
     if (owns_window()) {
       // Needed for the window to close immediately.
       deplete_run_loop_event_queue();
+    }
+    if (m_webview) {
+      g_object_unref(m_webview);
+      m_webview = nullptr;
     }
   }
 
@@ -176,11 +178,17 @@ protected:
   }
 
   noresult set_title_impl(const std::string &title) override {
+    if (!m_window) {
+      return {};
+    }
     gtk_window_set_title(GTK_WINDOW(m_window), title.c_str());
     return {};
   }
 
   noresult set_size_impl(int width, int height, webview_hint_t hints) override {
+    if (!m_window || !m_webview) {
+      return {};
+    }
     gtk_window_set_resizable(GTK_WINDOW(m_window), hints != WEBVIEW_HINT_FIXED);
     if (hints == WEBVIEW_HINT_NONE || hints == WEBVIEW_HINT_FIXED) {
       gtk_compat::window_set_size(GTK_WINDOW(m_window), width, height);
@@ -195,17 +203,26 @@ protected:
   }
 
   noresult navigate_impl(const std::string &url) override {
+    if (!m_webview) {
+      return {};
+    }
     webkit_web_view_load_uri(WEBKIT_WEB_VIEW(m_webview), url.c_str());
     return {};
   }
 
   noresult set_html_impl(const std::string &html) override {
+    if (!m_webview) {
+      return {};
+    }
     webkit_web_view_load_html(WEBKIT_WEB_VIEW(m_webview), html.c_str(),
                               nullptr);
     return {};
   }
 
   noresult eval_impl(const std::string &js) override {
+    if (!m_webview) {
+      return {};
+    }
     // URI is null before content has begun loading.
     if (!webkit_web_view_get_uri(WEBKIT_WEB_VIEW(m_webview))) {
       return {};
@@ -226,7 +243,9 @@ protected:
     auto *wk_script = webkit_user_script_new(
         js.c_str(), WEBKIT_USER_CONTENT_INJECT_TOP_FRAME,
         WEBKIT_USER_SCRIPT_INJECT_AT_DOCUMENT_START, nullptr, nullptr);
-    webkit_user_content_manager_add_script(m_user_content_manager, wk_script);
+    if (m_webview) {
+      webkit_user_content_manager_add_script(m_user_content_manager, wk_script);
+    }
     user_script script{
         js, user_script::impl_ptr{new user_script::impl{wk_script},
                                   [](user_script::impl *p) { delete p; }}};
@@ -236,7 +255,9 @@ protected:
 
   void remove_all_user_scripts_impl(
       const std::list<user_script> & /*scripts*/) override {
-    webkit_user_content_manager_remove_all_scripts(m_user_content_manager);
+    if (m_webview) {
+      webkit_user_content_manager_remove_all_scripts(m_user_content_manager);
+    }
   }
 
   bool are_user_scripts_equal_impl(const user_script &first,
@@ -289,7 +310,11 @@ private:
     }
     webkit_dmabuf::apply_webkit_dmabuf_workaround();
     // Initialize webview widget
-    m_webview = webkit_web_view_new();
+    auto *w = webkit_web_view_new();
+    if (!w) {
+      throw exception{WEBVIEW_ERROR_UNSPECIFIED, "Failed to create webview"};
+    }
+    m_webview = GTK_WIDGET(w);
     g_object_ref_sink(m_webview);
     WebKitUserContentManager *manager = m_user_content_manager =
         webkit_web_view_get_user_content_manager(WEBKIT_WEB_VIEW(m_webview));
@@ -319,6 +344,12 @@ private:
   noresult window_show() {
     if (m_is_window_shown) {
       return {};
+    }
+    if (!m_window || !m_webview) {
+      return {};
+    }
+    if (!GTK_IS_WIDGET(m_window) || !GTK_IS_WIDGET(m_webview)) {
+      return error_info{WEBVIEW_ERROR_INVALID_STATE, "Window or webview is not a valid widget"};
     }
     gtk_compat::window_set_child(GTK_WINDOW(m_window), GTK_WIDGET(m_webview));
     gtk_compat::widget_set_visible(GTK_WIDGET(m_webview), true);
