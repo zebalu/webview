@@ -261,18 +261,6 @@ macro(webview_install_targets)
     endif()
 
     install(TARGETS ${WEBVIEW_INSTALL_TARGET_NAMES}
-        COMPONENT webview_libraries_runtime_release
-        CONFIGURATIONS Release
-        RUNTIME
-            DESTINATION "${CMAKE_INSTALL_BINDIR}"
-        LIBRARY
-            DESTINATION "${CMAKE_INSTALL_LIBDIR}"
-            NAMELINK_COMPONENT webview_trash
-        ARCHIVE
-            DESTINATION "${CMAKE_INSTALL_LIBDIR}"
-            COMPONENT webview_trash)
-
-    install(TARGETS ${WEBVIEW_INSTALL_TARGET_NAMES}
         EXPORT webview_targets
         COMPONENT webview_libraries
         RUNTIME
