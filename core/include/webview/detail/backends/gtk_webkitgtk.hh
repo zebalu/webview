@@ -99,7 +99,7 @@ private:
 
 class gtk_webkit_engine : public engine_base {
 public:
-  gtk_webkit_engine(bool debug, void *window) : engine_base{!window} {
+  gtk_webkit_engine(bool debug, void *window, bool headless = false) : engine_base{!window, headless} {
     window_init(window);
     window_settings(debug);
     dispatch_size_default();
@@ -323,7 +323,7 @@ private:
     gtk_compat::window_set_child(GTK_WINDOW(m_window), GTK_WIDGET(m_webview));
     gtk_compat::widget_set_visible(GTK_WIDGET(m_webview), true);
 
-    if (owns_window()) {
+    if (owns_window() && !headless()) {
       gtk_widget_grab_focus(GTK_WIDGET(m_webview));
       gtk_compat::widget_set_visible(GTK_WIDGET(m_window), true);
     }

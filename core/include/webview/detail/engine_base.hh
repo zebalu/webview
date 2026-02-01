@@ -45,7 +45,8 @@ namespace detail {
 
 class engine_base {
 public:
-  engine_base(bool owns_window) : m_owns_window{owns_window} {}
+  engine_base(bool owns_window, bool headless = false) :
+      m_owns_window{owns_window}, m_headless(headless) {}
 
   virtual ~engine_base() = default;
 
@@ -347,6 +348,8 @@ protected:
   void set_default_size_guard(bool guarded) { m_is_size_set = guarded; }
 
   bool owns_window() const { return m_owns_window; }
+  bool headless() const { return m_headless; }
+
 
 private:
   static std::atomic_uint &window_ref_count() {
@@ -371,6 +374,7 @@ private:
   bool m_is_init_script_added{};
   bool m_is_size_set{};
   bool m_owns_window{};
+  bool m_headless{};
   static const int m_initial_width = 640;
   static const int m_initial_height = 480;
 };

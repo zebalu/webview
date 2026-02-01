@@ -9,10 +9,10 @@ int WINAPI WinMain(HINSTANCE /*hInst*/, HINSTANCE /*hPrevInst*/,
 int main() {
 #endif
   try {
-    webview::webview w(false, nullptr);
+    webview::webview w(false, nullptr, false);
     w.set_title("Basic Example");
     w.set_size(480, 320, WEBVIEW_HINT_NONE);
-    w.set_html("Thanks for using webview!");
+    w.set_html("<p style='background-color: white;'>Thanks for using webview!</p>");
     w.run();
   } catch (const webview::exception &e) {
     std::cerr << e.what() << '\n';

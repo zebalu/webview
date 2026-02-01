@@ -311,7 +311,7 @@ private:
 
 class win32_edge_engine : public engine_base {
 public:
-  win32_edge_engine(bool debug, void *window) : engine_base{!window} {
+  win32_edge_engine(bool debug, void *window, bool headless = false) : engine_base{!window, headless} {
     window_init(window);
     window_settings(debug);
     dispatch_size_default();
@@ -716,7 +716,7 @@ private:
   }
 
   noresult window_show() {
-    if (owns_window() && !m_is_window_shown) {
+    if (owns_window() && !m_is_window_shown && !headless()) {
       ShowWindow(m_window, SW_SHOW);
       UpdateWindow(m_window);
       SetFocus(m_window);
