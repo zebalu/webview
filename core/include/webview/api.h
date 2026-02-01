@@ -60,34 +60,6 @@ extern "C" {
 WEBVIEW_API webview_t webview_create(int debug, void *window);
 
 /**
- * Creates a new webview instance with headless mode option.
- *
- * @param debug Enable developer tools if supported by the backend.
- * @param window Optional native window handle, i.e. @c GtkWindow pointer
- *        @c NSWindow pointer (Cocoa) or @c HWND (Win32). If non-null,
- *        the webview widget is embedded into the given window, and the
- *        caller is expected to assume responsibility for the window as
- *        well as application lifecycle. If the window handle is null,
- *        a new window is created and both the window and application
- *        lifecycle are managed by the webview instance.
- * @param headless If non-zero, the webview window will not be shown.
- *        This is useful for running webview in a background process or
- *        for automated testing.
- * @remark Win32: The function also accepts a pointer to @c HWND (Win32) in the
- *         window parameter for backward compatibility.
- * @remark Win32/WebView2: @c CoInitializeEx should be called with
- *         @c COINIT_APARTMENTTHREADED before attempting to call this function
- *         with an existing window. Omitting this step may cause WebView2
- *         initialization to fail.
- * @return @c NULL on failure. Creation can fail for various reasons such
- *         as when required runtime dependencies are missing or when window
- *         creation fails.
- * @retval WEBVIEW_ERROR_MISSING_DEPENDENCY
- *         May be returned if WebView2 is unavailable on Windows.
- */
-WEBVIEW_API webview_t webview_create_headless(int debug, void *window, int headless);
-
-/**
  * Destroys a webview instance and closes the native window.
  *
  * @param w The webview instance.
